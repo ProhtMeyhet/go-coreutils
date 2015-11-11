@@ -63,7 +63,7 @@ func RemoveAll(path string) (err error) {
 	}
 
 	// remove file
-	if *interactivei && !yesOrNo("rm: do you want to remove '%s'? (y/N) " + path) {
+	if *interactivei && !yesOrNo(fmt.Sprintf("rm: do you want to remove '%s'? (y/N) ", path)) {
 		return nil
 	}
 
@@ -75,7 +75,7 @@ func removeDir(path string) (err error) {
 		return errors.New(fmt.Sprintf("rm: '%s' is a directory", path))
 	}
 
-	if *interactivei && !yesOrNo("rm: descend into directory '%s'? (y/N) " + path) {
+	if *interactivei && !yesOrNo(fmt.Sprintf("rm: descend into directory '%s'? (y/N) ", path)) {
 		return nil
 	}
 
@@ -91,11 +91,11 @@ func removeDir(path string) (err error) {
 	}
 
 	for _, name := range names {
-		if *interactivei && !yesOrNo("rm: remove '%s'? (y/N)" + path) {
+		if *interactivei && !yesOrNo(fmt.Sprintf("rm: remove '%s'? (y/N)", path + string(os.PathSeparator) + name)) {
 			continue
 		}
 
-		err := RemoveAll(path + string(os.PathSeparator) + name)
+		err := os.Remove(path + string(os.PathSeparator) + name)
 		if err != nil {
 			return err
 		}
@@ -105,6 +105,10 @@ func removeDir(path string) (err error) {
 	// and by the way it's always a good idea to close stuff you're done with
 	fd.Close()
 
+	if *interactivei && !yesOrNo(fmt.Sprintf("rm: remove '%s'? (y/N)", path)) {
+		return nil
+	}
+
 	// Remove directory.
 	return os.Remove(path)
 }
@@ -113,7 +117,7 @@ func removeDir(path string) (err error) {
 func yesOrNo(question string) bool {
 	var answer string
 
-	fmt.Println(question)
+	fmt.Printf("%v", question)
 	_, err := fmt.Scanln(&answer)
 	if err != nil {
 		goto out
